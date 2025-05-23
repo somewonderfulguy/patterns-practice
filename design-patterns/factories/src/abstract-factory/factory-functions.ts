@@ -5,38 +5,36 @@ interface Logger {
   error(message: string): void
 }
 
-class ProductionLogger implements Logger {
-  info(message: string) {}
+const productionLogger = (): Logger => ({
+  info(message: string) {},
   warn(message: string) {
     console.warn(message)
-  }
-  debug(message: string) {}
+  },
+  debug(message: string) {},
   error(message: string) {
     console.error(message)
   }
-}
+})
 
-class DevelopmentLogger implements Logger {
+const developmentLogger = (): Logger => ({
   info(message: string) {
     console.info(message)
-  }
+  },
   warn(message: string) {
     console.warn(message)
-  }
+  },
   debug(message: string) {
     console.debug(message)
-  }
+  },
   error(message: string) {
     console.error(message)
   }
-}
+})
 
-export class LoggerFactory {
-  public static createLogger(): Logger {
-    if (process.env.NODE_ENV === 'production') {
-      return new ProductionLogger()
-    } else {
-      return new DevelopmentLogger()
-    }
+export const createLogger = (): Logger => {
+  if (process.env.NODE_ENV === 'production') {
+    return productionLogger()
+  } else {
+    return developmentLogger()
   }
 }
