@@ -84,3 +84,42 @@ Rather than blocking on operations (like file or socket reads), it **waits for I
 > "**Reactor** waits for readiness signals, then reacts by calling your handlers — no blocking, just reacting."
 
 ---
+
+# Event loop nuances
+
+## 1. ✅ Macro “Event Loop Tick” (the full cycle):
+
+This is what libuv (Node’s C++ engine) thinks of as a tick:
+
+```txt
+Copy
+Edit
+[timers]
+→ [pendingCallbacks]
+→ [idle, prepare]
+→ [poll]
+→ [check]
+→ [closeCallbacks]
+```
+
+Each of these is a phase. A full event loop "tick" = running all those phases in order.
+
+## 2. ✅ Micro “JS execution tick” (nextTick / microtask concept):
+
+This is inside a single phase, during JS callback execution.
+
+Whenever a callback is executed (like a setTimeout, setImmediate, or an I/O completion), this happens immediately afterward:
+
+```txt
+// Pseudocode:
+runCallback()
+flush process.nextTick()
+flush Promise.then / queueMicrotask()
+```
+
+After every callback, Node flushes:
+
+1. process.nextTick() queue
+1. Then microtasks like Promise.then
+
+This happens before continuing the current phase or moving on to the next.
